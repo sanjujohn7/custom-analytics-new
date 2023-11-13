@@ -49,9 +49,11 @@ public class CustomAnalyticsService {
             System.out.println(records);
         }
         ;
-        if (!indexExists(indexName)) {
-            createIndex(indexName);
+        if (indexExists(indexName)) {
+            throw new RuntimeException("Index name already Exist");
+
         }
+        createIndex(indexName);
         BulkRequest bulkRequest = new BulkRequest();
         for (Map<String, String> record : records) {
             bulkRequest.add(new IndexRequest(indexName).source(record));
