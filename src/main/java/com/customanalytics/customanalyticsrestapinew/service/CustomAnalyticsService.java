@@ -5,16 +5,22 @@ package com.customanalytics.customanalyticsrestapinew.service;
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -25,7 +31,7 @@ import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
-public class ElasticsearchService {
+public class CustomAnalyticsService {
 
     private final RestHighLevelClient client;
 
@@ -61,5 +67,34 @@ public class ElasticsearchService {
         CreateIndexRequest request = new CreateIndexRequest(indexName);
         client.indices().create(request, RequestOptions.DEFAULT);
 
+    }
+
+    public List<?> getDataByIndexName(String indexName) throws IOException{
+        GetIndexRequest request = new GetIndexRequest(indexName);
+        boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
+
+        if (exists) {
+            SearchRequest searchRequest = new SearchRequest(indexName);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+            searchRequest.source(searchSourceBuilder);
+
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+            return extractDocuments(searchResponse);
+        }
+        else {
+            return List.of("Index does not exist");
+        }
+    }
+
+    private List<Map<String, Object>> extractDocuments(SearchResponse searchResponse) {
+        List<Map<String, Object>> documents = new ArrayList<>();
+
+        Arrays.stream(searchResponse.getHits().getHits()).forEach(hit ->
+                documents.add(hit.getSourceAsMap())
+        );
+
+        return documents;
     }
 }
