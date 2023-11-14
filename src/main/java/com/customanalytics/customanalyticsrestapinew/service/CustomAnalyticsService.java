@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -22,8 +23,11 @@ import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.elasticsearch.search.SearchHit;
 
 @Service
 @RequiredArgsConstructor
@@ -94,5 +98,36 @@ public class CustomAnalyticsService {
                 .forEach(hit -> documents.add(hit.getSourceAsMap()));
 
         return documents;
+    }
+
+    public List<Map<String, Object>> searchBasedOnFilterAndSort(String indexName, String filterField, String filterValue, String sortField, String sortOrder,
+                        int from,int size) throws IOException {
+        SearchRequest searchRequest = new SearchRequest(indexName);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+        // Add filter
+        if (filterField != null && filterValue != null) {
+            searchSourceBuilder.query(QueryBuilders.matchQuery(filterField, filterValue));
+        }
+
+        // Add sorting
+        if (sortField != null) {
+            searchSourceBuilder.sort(sortField, SortOrder.fromString(sortOrder));
+        }
+
+        searchSourceBuilder.from(from);
+        searchSourceBuilder.size(size);
+
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        return extractSearchResults(searchResponse);
+    }
+
+    private List<Map<String, Object>> extractSearchResults(SearchResponse searchResponse) {
+        return Arrays.stream(searchResponse.getHits().getHits())
+                .map(SearchHit::getSourceAsMap)
+                .collect(Collectors.toList());
     }
 }

@@ -20,7 +20,7 @@
 						},
 						{
 							"key": "indexName",
-							"value": "new",
+							"value": "data",
 							"type": "default"
 						}
 					]
@@ -57,7 +57,7 @@
 					]
 				},
 				"url": {
-					"raw": "localhost:8080/get?indexName=test",
+					"raw": "localhost:8080/get?indexName=data",
 					"host": [
 						"localhost"
 					],
@@ -68,7 +68,62 @@
 					"query": [
 						{
 							"key": "indexName",
-							"value": "test"
+							"value": "data"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getDataByFilter",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "localhost:8080/search?indexName=data&filterField=Product Category&filterValue=Electronics&sortField=Date&sortOrder=ASC&from=0&size=5",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "indexName",
+							"value": "data"
+						},
+						{
+							"key": "filterField",
+							"value": "Product Category"
+						},
+						{
+							"key": "filterValue",
+							"value": "Electronics"
+						},
+						{
+							"key": "sortField",
+							"value": "Date"
+						},
+						{
+							"key": "sortOrder",
+							"value": "ASC"
+						},
+						{
+							"key": "from",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "5"
 						}
 					]
 				}
