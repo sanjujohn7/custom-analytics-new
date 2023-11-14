@@ -17,7 +17,7 @@ public class UserService {
     public UserResponse addUser(UserRequest userRequest) {
         User user = User.builder()
                 .name(userRequest.getName())
-                .email(userRequest.getEmail())
+                .email(userRequest.getEmail().toLowerCase().trim())
                 .password(passwordEncoder.encode(userRequest.getPassword()))
                 .build();
         User saved = userRepository.save(user);
