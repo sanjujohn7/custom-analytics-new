@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,13 +35,10 @@ public class CustomAnalyticsControllerTest {
     @Test
     public void testUploadFile() throws Exception {
 
-        //Given
         MockMultipartFile file = new MockMultipartFile("file", "test.csv", "text/plain", "file content".getBytes());
         String indexName = "test";
-        //When
         doNothing().when(customAnalyticsService).uploadFile(eq(indexName),any(MultipartFile.class));
 
-        //Then
         mockMvc.perform(multipart("/upload")
                         .file(file)
                         .param("indexName", indexName))
@@ -50,19 +48,28 @@ public class CustomAnalyticsControllerTest {
 
     @Test
     public void testUploadFileException() throws Exception {
-        // Given
         MockMultipartFile file = new MockMultipartFile("file", "test.csv", "text/plain", "file content".getBytes());
         String indexName = "test";
 
-        // Mock the behavior of void method using doThrow for IOException
         doThrow(new IOException("Error uploading file")).when(customAnalyticsService).uploadFile(eq(indexName), any(MultipartFile.class));
 
-        // When and Then
         mockMvc.perform(multipart("/upload")
                         .file(file)
                         .param("indexName", indexName))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Error uploading file: Error uploading file"));
+    }
+    @Test
+    public void testGetDataByIndexNameException() throws Exception {
+        String indexName = "test";
+        doThrow(new IOException("Error retrieving data"))
+                .when(customAnalyticsService)
+                .getDataByIndexName(indexName);
+        mockMvc.perform(get("/get").param("indexName", indexName))
+                .andExpect(status().isInternalServerError())
+                .andExpect(
+                        content()
+                                .string("[\"Error while retrieving data Error retrieving data\"]"));
     }
 
 }
