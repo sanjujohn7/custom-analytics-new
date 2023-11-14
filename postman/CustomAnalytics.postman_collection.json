@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "3e4942e8-4aad-44db-a2cd-ada8bfb7c85a",
+		"_postman_id": "3fe0c7cd-ce82-4d00-8774-9b712bae1a98",
 		"name": "CustomAnalytics",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29863931"
 	},
 	"item": [
 		{
@@ -26,12 +27,13 @@
 					]
 				},
 				"url": {
-					"raw": "localhost:8080/upload",
+					"raw": "localhost:8080/custom-analytics/upload",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"custom-analytics",
 						"upload"
 					]
 				}
@@ -57,12 +59,13 @@
 					]
 				},
 				"url": {
-					"raw": "localhost:8080/get?indexName=data",
+					"raw": "localhost:8080/custom-analytics/get?indexName=data",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"custom-analytics",
 						"get"
 					],
 					"query": [
@@ -88,12 +91,13 @@
 					"formdata": []
 				},
 				"url": {
-					"raw": "localhost:8080/search?indexName=data&filterField=Product Category&filterValue=Electronics&sortField=Date&sortOrder=ASC&from=0&size=5",
+					"raw": "localhost:8080/custom-analytics/search?indexName=data&filterField=Product Category&filterValue=Electronics&sortField=Date&sortOrder=ASC&from=0&size=5",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"custom-analytics",
 						"search"
 					],
 					"query": [
@@ -125,6 +129,74 @@
 							"key": "size",
 							"value": "5"
 						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User SignUp",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"John\",\r\n    \"email\":\"jh@gmail.com\",\r\n    \"password\":\"john123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/custom-analytics/sign-up",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"custom-analytics",
+						"sign-up"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User Login",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"John\",\r\n    \"password\":\"john123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/custom-analytics/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"custom-analytics",
+						"login"
 					]
 				}
 			},
