@@ -22,6 +22,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -79,5 +80,37 @@ public class CustomAnalyticsServiceTest {
         List<?> result = customAnalyticsService.getDataByIndexName(indexName);
 
         assertEquals(expectedDocuments, result);
+    }
+
+    @Test
+    public void testSearchBasedOnFilterAndSort() throws IOException {
+        String indexName = "test";
+        String filterField = "GeographicLocation";
+        String filterValue = "NewYork";
+        String sortField = "Date";
+        String sortOrder = "ASC";
+        int from =0;
+        int size =10;
+        // Mocked data
+        SearchHit mockSearchHit1 = mock(SearchHit.class);
+        when(mockSearchHit1.getSourceAsMap()).thenReturn(Map.of(filterField, filterValue));
+
+        SearchHits mockSearchHits = mock(SearchHits.class);
+        when(mockSearchHits.getHits()).thenReturn(new SearchHit[]{mockSearchHit1});
+
+        SearchResponse mockSearchResponse = mock(SearchResponse.class);
+        when(mockSearchResponse.getHits()).thenReturn(mockSearchHits);
+
+        // Mocking Elasticsearch client behavior
+        when(mockClient.search(ArgumentMatchers.any(SearchRequest.class), ArgumentMatchers.any(RequestOptions.class)))
+                .thenReturn(mockSearchResponse);
+
+        // Perform the service method call
+        List<Map<String, Object>> result = customAnalyticsService.searchBasedOnFilterAndSort(
+                indexName, filterField, filterValue, sortField, sortOrder, from, size);
+
+        // Verify the result
+        assertEquals(1, result.size());
+        assertEquals("NewYork", result.get(0).get("GeographicLocation"));
     }
 }
