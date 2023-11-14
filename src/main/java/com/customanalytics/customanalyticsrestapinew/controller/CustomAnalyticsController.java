@@ -9,8 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@RequestMapping
 @RestController
+@RequestMapping("/custom-analytics")
 @RequiredArgsConstructor
 public class CustomAnalyticsController {
     private final CustomAnalyticsService customAnalyticsService;
