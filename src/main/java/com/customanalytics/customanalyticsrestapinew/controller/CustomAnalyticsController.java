@@ -44,10 +44,13 @@ public class CustomAnalyticsController {
             @RequestParam String indexName,
             @RequestParam(required = false) String filterField,
             @RequestParam(required = false) String filterValue,
-            @RequestParam(required = false) String sortField
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder,
+            @RequestParam(required = false) int from,
+            @RequestParam(required = false) int size
     ) {
         try {
-            List<?> searchResults = customAnalyticsService.searchBasedOnFilterAndSort(indexName, filterField, filterValue, sortField);
+            List<?> searchResults = customAnalyticsService.searchBasedOnFilterAndSort(indexName, filterField, filterValue, sortField, sortOrder,from,size);
             return ResponseEntity.ok(searchResults);
         } catch (IOException e) {
             return ResponseEntity.status(500).body(Collections.singletonList("Error while filtering data " + e.getMessage()));

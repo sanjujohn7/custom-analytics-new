@@ -100,7 +100,8 @@ public class CustomAnalyticsService {
         return documents;
     }
 
-    public List<Map<String, Object>> searchBasedOnFilterAndSort(String indexName, String filterField, String filterValue, String sortField) throws IOException {
+    public List<Map<String, Object>> searchBasedOnFilterAndSort(String indexName, String filterField, String filterValue, String sortField, String sortOrder,
+                        int from,int size) throws IOException {
         SearchRequest searchRequest = new SearchRequest(indexName);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
@@ -111,8 +112,11 @@ public class CustomAnalyticsService {
 
         // Add sorting
         if (sortField != null) {
-            searchSourceBuilder.sort(SortBuilders.fieldSort(sortField).order(SortOrder.ASC));
+            searchSourceBuilder.sort(sortField, SortOrder.fromString(sortOrder));
         }
+
+        searchSourceBuilder.from(from);
+        searchSourceBuilder.size(size);
 
         searchRequest.source(searchSourceBuilder);
 
