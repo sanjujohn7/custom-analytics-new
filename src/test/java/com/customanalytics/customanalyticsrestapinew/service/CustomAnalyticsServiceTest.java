@@ -1,40 +1,32 @@
 package com.customanalytics.customanalyticsrestapinew.service;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.IndicesClient;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.client.indices.GetIndexRequest;
-
-import org.mockito.MockitoAnnotations;
-
-
-import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.IndicesClient;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockitoAnnotations;
+import org.springframework.mock.web.MockMultipartFile;
 
 public class CustomAnalyticsServiceTest {
-  // @Mock
+    // @Mock
     private RestHighLevelClient mockClient;
 
     // @InjectMocks
@@ -52,12 +44,11 @@ public class CustomAnalyticsServiceTest {
     @Test
     void testUploadFile() throws IOException {
         String indexName = "test1";
-        MockMultipartFile file = new MockMultipartFile("file", "test.csv", "text/plain", "name,age\nJohn,30\nJane,25".getBytes());
+        MockMultipartFile file =
+                new MockMultipartFile(
+                        "file", "test.csv", "text/plain", "name,age\nJohn,30\nJane,25".getBytes());
 
-
-
-        when(mockClient.indices().exists(any(GetIndexRequest.class), any()))
-                .thenReturn(false);
+        when(mockClient.indices().exists(any(GetIndexRequest.class), any())).thenReturn(false);
         when(mockClient.indices().create(any(CreateIndexRequest.class), any())).thenReturn(null);
         when(mockClient.bulk(any(BulkRequest.class), any())).thenReturn(null);
 
@@ -68,6 +59,7 @@ public class CustomAnalyticsServiceTest {
         verify(mockClient, times(1)).bulk(any(), any());
         assertTrue(true);
     }
+
     @Test
     public void testGetDataByIndexName() throws IOException {
         String indexName = "testIndex";
