@@ -69,4 +69,31 @@ public class CustomAnalyticsControllerTest {
                         content()
                                 .string("[\"Error while retrieving data Error retrieving data\"]"));
     }
+
+    @Test
+    public void testGetDataFilterException() throws Exception {
+        String indexName = "test";
+        String filterField = "Geographic Location";
+        String filterValue = "New York";
+        String sortField = "Date";
+        String sortOrder = "ASC";
+        int from =0;
+        int size =10;
+        doThrow(new IOException("Error filtering data"))
+                .when(customAnalyticsService)
+                .searchBasedOnFilterAndSort(indexName,filterField,filterValue,sortField,sortOrder,from,size);
+        mockMvc.perform(get("/search")
+                        .param("indexName", indexName)
+                        .param("filterField", filterField)
+                        .param("filterValue", filterValue)
+                        .param("sortField", sortField)
+                        .param("sortOrder", sortOrder)
+                        .param("from", String.valueOf(from))
+                        .param("size", String.valueOf(size)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(
+                        content()
+                                .string("[\"Error while filtering data Error filtering data\"]"));
+    }
+
 }
