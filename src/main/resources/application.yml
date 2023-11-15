@@ -7,9 +7,9 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/CustomAnalytics
     username: postgres
-    password: pass
+    password: password
 
   jpa:
     hibernate:
-    ddl-auto: update
+      ddl-auto: update
     show-sql: true

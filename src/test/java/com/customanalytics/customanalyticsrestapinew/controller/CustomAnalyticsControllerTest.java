@@ -17,11 +17,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser
 public class CustomAnalyticsControllerTest {
     @Autowired private MockMvc mockMvc;
 
@@ -37,7 +39,7 @@ public class CustomAnalyticsControllerTest {
                 .when(customAnalyticsService)
                 .uploadFile(eq(indexName), any(MultipartFile.class));
 
-        mockMvc.perform(multipart("/upload").file(file).param("indexName", indexName))
+        mockMvc.perform(multipart("/custom-analytics/upload").file(file).param("indexName", indexName))
                 .andExpect(status().isOk())
                 .andExpect(content().string("File uploaded successfully"));
     }
@@ -52,7 +54,7 @@ public class CustomAnalyticsControllerTest {
                 .when(customAnalyticsService)
                 .uploadFile(eq(indexName), any(MultipartFile.class));
 
-        mockMvc.perform(multipart("/upload").file(file).param("indexName", indexName))
+        mockMvc.perform(multipart("/custom-analytics/upload").file(file).param("indexName", indexName))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Error uploading file: Error uploading file"));
     }
@@ -63,7 +65,7 @@ public class CustomAnalyticsControllerTest {
         doThrow(new IOException("Error retrieving data"))
                 .when(customAnalyticsService)
                 .getDataByIndexName(indexName);
-        mockMvc.perform(get("/get").param("indexName", indexName))
+        mockMvc.perform(get("/custom-analytics/get").param("indexName", indexName))
                 .andExpect(status().isInternalServerError())
                 .andExpect(
                         content()
@@ -82,7 +84,7 @@ public class CustomAnalyticsControllerTest {
         doThrow(new IOException("Error filtering data"))
                 .when(customAnalyticsService)
                 .searchBasedOnFilterAndSort(indexName,filterField,filterValue,sortField,sortOrder,from,size);
-        mockMvc.perform(get("/search")
+        mockMvc.perform(get("/custom-analytics/search")
                         .param("indexName", indexName)
                         .param("filterField", filterField)
                         .param("filterValue", filterValue)
