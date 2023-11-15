@@ -7,6 +7,7 @@ import com.customanalytics.customanalyticsrestapinew.contract.UserResponse;
 import com.customanalytics.customanalyticsrestapinew.exception.UserNotFoundException;
 import com.customanalytics.customanalyticsrestapinew.service.JwtService;
 import com.customanalytics.customanalyticsrestapinew.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,13 +29,13 @@ public class UserController {
 
 
     @PostMapping("/sign-up")
-    public ResponseEntity<UserResponse> addUser(@RequestBody UserRequest userRequest){
+    public ResponseEntity<UserResponse> addUser(@Valid @RequestBody UserRequest userRequest){
         UserResponse response = userService.addUser(userRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> authenticateAndGetToken(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<AuthResponse> authenticateAndGetToken(@Valid @RequestBody AuthRequest authRequest) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getName(), authRequest.getPassword()));
         if (authentication.isAuthenticated()) {
             AuthResponse response = jwtService.generateToken(authRequest.getName());
