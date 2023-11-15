@@ -6,6 +6,8 @@ import static java.util.stream.Collectors.toMap;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.customanalytics.customanalyticsrestapinew.contract.response.GetDataResponse;
 import com.customanalytics.customanalyticsrestapinew.exception.IndexAlreadyExistException;
 import com.customanalytics.customanalyticsrestapinew.exception.IndexNotFoundException;
 import com.customanalytics.customanalyticsrestapinew.exception.UserNotFoundException;
@@ -25,7 +28,12 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.index.query.TermQueryBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.Sum;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -134,4 +142,39 @@ public class CustomAnalyticsService {
                 .map(SearchHit::getSourceAsMap)
                 .collect(Collectors.toList());
     }
+    public GetDataResponse getDataBetweenDatesAndCategory(String indexName, String fromDate, String toDate, String productCategory) throws IOException {
+        SearchRequest searchRequest = new SearchRequest(indexName);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        RangeQueryBuilder dateRangeQuery = QueryBuilders.rangeQuery("Date")
+                .gte(formatDate(fromDate))
+                .lte(formatDate(toDate));
+        TermQueryBuilder categoryQuery = QueryBuilders.termQuery("Product Category.keyword", productCategory);
+        boolQueryBuilder.must(dateRangeQuery);
+        boolQueryBuilder.must(categoryQuery);
+        searchSourceBuilder.query(boolQueryBuilder);
+
+        searchSourceBuilder.aggregation(AggregationBuilders.count("count").field("Product Category.keyword")); // Replace 'field_name' with your actual field name
+        searchSourceBuilder.aggregation(AggregationBuilders.sum("total").field("Total Sales.numeric")); // Replace 'numeric_field' with your actual numeric field name
+        searchRequest.source(searchSourceBuilder);
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        long count = searchResponse.getAggregations().get("count") != null ?
+                ((org.elasticsearch.search.aggregations.metrics.ValueCount) searchResponse.getAggregations().get("count")).getValue() : 0;
+        double total = searchResponse.getAggregations().get("total") != null ?
+                ((Sum) searchResponse.getAggregations().get("total")).getValue() : 0;
+
+        GetDataResponse response = new GetDataResponse();
+        response.setData(extractSearchResults(searchResponse));
+        response.setSum((long) total);
+        response.setCount(count);
+        return response;
+    }
+    private String formatDate(String date) {
+        // You may need to adjust the date format based on your Elasticsearch date mapping
+        LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
+        return localDate.format(DateTimeFormatter.ISO_DATE);
+    }
+
+
 }
