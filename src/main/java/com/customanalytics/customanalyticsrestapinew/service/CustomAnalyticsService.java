@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import com.customanalytics.customanalyticsrestapinew.exception.IndexAlreadyExistException;
+import com.customanalytics.customanalyticsrestapinew.exception.IndexNotFoundException;
+import com.customanalytics.customanalyticsrestapinew.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
@@ -53,7 +57,7 @@ public class CustomAnalyticsService {
         }
         ;
         if (indexExists(indexName)) {
-            throw new RuntimeException("Index name already Exist");
+            throw new IndexAlreadyExistException("Index name already Exist");
         }
         createIndex(indexName);
         BulkRequest bulkRequest = new BulkRequest();
@@ -73,7 +77,7 @@ public class CustomAnalyticsService {
         client.indices().create(request, RequestOptions.DEFAULT);
     }
 
-    public List<?> getDataByIndexName(String indexName) throws IOException {
+    public List<Map<String, Object>> getDataByIndexName(String indexName) throws IOException {
         GetIndexRequest request = new GetIndexRequest(indexName);
         boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
 
@@ -87,7 +91,7 @@ public class CustomAnalyticsService {
 
             return extractDocuments(searchResponse);
         } else {
-            return List.of("Index does not exist");
+            throw new IndexNotFoundException("Index not found");
         }
     }
 

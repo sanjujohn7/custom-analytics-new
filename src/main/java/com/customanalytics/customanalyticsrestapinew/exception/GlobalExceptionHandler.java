@@ -14,4 +14,18 @@ public class GlobalExceptionHandler {
     public String handleUserNotFoundException(UserNotFoundException ex){
         return ex.getMessage();
     }
+
+    @ExceptionHandler(IndexNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public String handleIndexNotFoundException(IndexNotFoundException ex){
+        return ex.getMessage();
+    }
+
+    @ExceptionHandler(IndexAlreadyExistException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public String handleIndexAlreadyExistException(IndexAlreadyExistException ex){
+        return ex.getMessage();
+    }
 }

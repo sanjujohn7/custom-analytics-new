@@ -1,14 +1,23 @@
 {
 	"info": {
-		"_postman_id": "3fe0c7cd-ce82-4d00-8774-9b712bae1a98",
+		"_postman_id": "431e0847-5bc3-4b52-bdfe-f2b49952d3ce",
 		"name": "CustomAnalytics",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "29863931"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
 			"name": "upload file",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -17,7 +26,7 @@
 						{
 							"key": "file",
 							"type": "file",
-							"src": []
+							"src": "/C:/Users/januv/Downloads/sampleData (1).csv"
 						},
 						{
 							"key": "indexName",
@@ -46,17 +55,21 @@
 				"disableBodyPruning": true
 			},
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJKb2huIiwiaWF0IjoxNzAwMDI5MTkwLCJleHAiOjE3MDAwMzA5OTB9.Sbm_bYzYocRl9fLKONGMjOiAWVS-RPZfIZHwPEv46Hw",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"body": {
 					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "file",
-							"type": "file",
-							"src": "/C:/Users/januv/Downloads/sampleData.csv"
-						}
-					]
+					"formdata": []
 				},
 				"url": {
 					"raw": "localhost:8080/custom-analytics/get?indexName=data",
@@ -84,6 +97,16 @@
 				"disableBodyPruning": true
 			},
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -166,16 +189,6 @@
 		{
 			"name": "User Login",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
