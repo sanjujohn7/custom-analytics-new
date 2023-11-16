@@ -7,7 +7,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/CustomAnalytics
     username: postgres
-    password: Aish@123
+    password: ${your-password}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -19,5 +19,3 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
-server :
-  port : 8081
