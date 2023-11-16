@@ -15,11 +15,12 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public UserResponse addUser(UserRequest userRequest) {
-        User user = User.builder()
-                .name(userRequest.getName())
-                .email(userRequest.getEmail().toLowerCase().trim())
-                .password(passwordEncoder.encode(userRequest.getPassword()))
-                .build();
+        User user =
+                User.builder()
+                        .name(userRequest.getName())
+                        .email(userRequest.getEmail().toLowerCase().trim())
+                        .password(passwordEncoder.encode(userRequest.getPassword()))
+                        .build();
         User saved = userRepository.save(user);
         return UserResponse.builder()
                 .id(saved.getId())

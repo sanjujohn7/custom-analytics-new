@@ -1,8 +1,8 @@
 package com.customanalytics.customanalyticsrestapinew.controller;
 
 import com.customanalytics.customanalyticsrestapinew.contract.request.AuthRequest;
-import com.customanalytics.customanalyticsrestapinew.contract.response.AuthResponse;
 import com.customanalytics.customanalyticsrestapinew.contract.request.UserRequest;
+import com.customanalytics.customanalyticsrestapinew.contract.response.AuthResponse;
 import com.customanalytics.customanalyticsrestapinew.contract.response.UserResponse;
 import com.customanalytics.customanalyticsrestapinew.exception.UserNotFoundException;
 import com.customanalytics.customanalyticsrestapinew.service.JwtService;
@@ -27,16 +27,19 @@ public class UserController {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-
     @PostMapping("/sign-up")
-    public ResponseEntity<UserResponse> addUser(@Valid @RequestBody UserRequest userRequest){
+    public ResponseEntity<UserResponse> addUser(@Valid @RequestBody UserRequest userRequest) {
         UserResponse response = userService.addUser(userRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> authenticateAndGetToken(@Valid @RequestBody AuthRequest authRequest) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getName(), authRequest.getPassword()));
+    public ResponseEntity<AuthResponse> authenticateAndGetToken(
+            @Valid @RequestBody AuthRequest authRequest) {
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                authRequest.getName(), authRequest.getPassword()));
         if (authentication.isAuthenticated()) {
             AuthResponse response = jwtService.generateToken(authRequest.getName());
             return ResponseEntity.ok(response);

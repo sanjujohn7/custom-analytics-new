@@ -48,15 +48,18 @@ public class CustomAnalyticsController {
             @RequestParam(required = false) String sortField,
             @RequestParam(required = false) String sortOrder,
             @RequestParam(required = false) int from,
-            @RequestParam(required = false) int size
-    ) {
+            @RequestParam(required = false) int size) {
         try {
-            List<?> searchResults = customAnalyticsService.searchBasedOnFilterAndSort(indexName, filterField, filterValue, sortField, sortOrder, from, size);
+            List<?> searchResults =
+                    customAnalyticsService.searchBasedOnFilterAndSort(
+                            indexName, filterField, filterValue, sortField, sortOrder, from, size);
             return ResponseEntity.ok(searchResults);
         } catch (IOException e) {
-            return ResponseEntity.status(500).body(Collections.singletonList("Error while filtering data " + e.getMessage()));
+            return ResponseEntity.status(500)
+                    .body(
+                            Collections.singletonList(
+                                    "Error while filtering data " + e.getMessage()));
         }
-
     }
 
     @GetMapping("/data")
@@ -64,14 +67,19 @@ public class CustomAnalyticsController {
             @RequestParam String indexName,
             @RequestParam String fromDate,
             @RequestParam String toDate,
-            @RequestParam String productCategory
-    ) {
+            @RequestParam String productCategory) {
         {
             try {
-                GetDataResponse searchResults = customAnalyticsService.getDataBetweenDatesAndCategory(indexName, fromDate, toDate, productCategory);
+                GetDataResponse searchResults =
+                        customAnalyticsService.getDataBetweenDatesAndCategory(
+                                indexName, fromDate, toDate, productCategory);
                 return ResponseEntity.ok(searchResults);
             } catch (IOException e) {
-                return ResponseEntity.status(500).body((GetDataResponse) Collections.singletonList("Error while fetching data " + e.getMessage()));
+                return ResponseEntity.status(500)
+                        .body(
+                                (GetDataResponse)
+                                        Collections.singletonList(
+                                                "Error while fetching data " + e.getMessage()));
             }
         }
     }

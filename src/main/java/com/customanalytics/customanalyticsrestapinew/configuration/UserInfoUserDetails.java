@@ -1,17 +1,17 @@
 package com.customanalytics.customanalyticsrestapinew.configuration;
 
 import com.customanalytics.customanalyticsrestapinew.model.User;
+import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Collection;
 
 public class UserInfoUserDetails implements UserDetails {
     private String name;
     private String password;
+
     public UserInfoUserDetails(User user) {
-        name=user.getName();
-        password=user.getPassword();
+        name = user.getName();
+        password = user.getPassword();
     }
 
     @Override

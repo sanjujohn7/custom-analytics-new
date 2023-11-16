@@ -87,21 +87,24 @@ public class CustomAnalyticsServiceTest {
         String filterValue = "NewYork";
         String sortField = "Date";
         String sortOrder = "ASC";
-        int from =0;
-        int size =10;
+        int from = 0;
+        int size = 10;
         SearchHit mockSearchHit1 = mock(SearchHit.class);
         when(mockSearchHit1.getSourceAsMap()).thenReturn(Map.of(filterField, filterValue));
 
         SearchHits mockSearchHits = mock(SearchHits.class);
-        when(mockSearchHits.getHits()).thenReturn(new SearchHit[]{mockSearchHit1});
+        when(mockSearchHits.getHits()).thenReturn(new SearchHit[] {mockSearchHit1});
 
         SearchResponse mockSearchResponse = mock(SearchResponse.class);
         when(mockSearchResponse.getHits()).thenReturn(mockSearchHits);
 
-        when(mockClient.search(ArgumentMatchers.any(SearchRequest.class), ArgumentMatchers.any(RequestOptions.class)))
+        when(mockClient.search(
+                        ArgumentMatchers.any(SearchRequest.class),
+                        ArgumentMatchers.any(RequestOptions.class)))
                 .thenReturn(mockSearchResponse);
-        List<Map<String, Object>> result = customAnalyticsService.searchBasedOnFilterAndSort(
-                indexName, filterField, filterValue, sortField, sortOrder, from, size);
+        List<Map<String, Object>> result =
+                customAnalyticsService.searchBasedOnFilterAndSort(
+                        indexName, filterField, filterValue, sortField, sortOrder, from, size);
         assertEquals(1, result.size());
         assertEquals("NewYork", result.get(0).get("GeographicLocation"));
     }
