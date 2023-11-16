@@ -6,22 +6,31 @@ import static java.util.stream.Collectors.toMap;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import com.customanalytics.customanalyticsrestapinew.contract.getDataResponse;
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.index.query.TermQueryBuilder;
+import org.elasticsearch.script.Script;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.Sum;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -39,19 +48,17 @@ public class CustomAnalyticsService {
         List<Map<String, String>> records;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
             String[] headers = br.readLine().split(",");
-            records =
-                    br.lines()
-                            .map(s -> s.split(","))
-                            .map(
-                                    t ->
-                                            IntStream.range(0, t.length)
-                                                    .boxed()
-                                                    .collect(toMap(i -> headers[i], i -> t[i])))
-                            .collect(toList());
-            System.out.println(headers);
-            System.out.println(records);
+            // Remove spaces from headers
+            String[] cleanedHeaders = Arrays.stream(headers)
+                    .map(String::trim) // Remove leading and trailing spaces
+                    .map(header -> header.replaceAll("\\s+", "")) // Remove spaces within the header
+                    .toArray(String[]::new);
+
+            records = br.lines()
+                    .map(s -> s.split(","))
+                    .map(t -> IntStream.range(0, t.length).boxed().collect(toMap(i -> cleanedHeaders[i], i -> t[i])))
+                    .collect(toList());
         }
-        ;
         if (indexExists(indexName)) {
             throw new RuntimeException("Index name already Exist");
         }
@@ -123,6 +130,55 @@ public class CustomAnalyticsService {
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
         return extractSearchResults(searchResponse);
+    }
+
+    public getDataResponse getDataBetweenDatesAndCategory(String indexName, String fromDate, String toDate, String productCategory) throws IOException {
+        SearchRequest searchRequest = new SearchRequest(indexName);
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        RangeQueryBuilder dateRangeQuery = QueryBuilders.rangeQuery("Date")
+                .gte(formatDate(fromDate))
+                .lte(formatDate(toDate));
+
+        TermQueryBuilder categoryQuery = QueryBuilders.termQuery("ProductCategory.keyword", productCategory);
+
+        boolQueryBuilder.must(dateRangeQuery);
+        boolQueryBuilder.must(categoryQuery);
+
+        searchSourceBuilder.query(boolQueryBuilder);
+
+
+        searchSourceBuilder.aggregation(AggregationBuilders.count("count").field("ProductCategory.keyword")); // Replace 'field_name' with your actual field name
+
+        //searchSourceBuilder.aggregation(AggregationBuilders.sum("total").field("TotalProfit.numeric")); // Replace 'numeric_field' with your actual numeric field name
+
+        searchSourceBuilder.aggregation(AggregationBuilders.sum("sum_agg")
+                .script(new Script("Double.parseDouble(doc[TotalProfit].value)")));
+
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        long count = searchResponse.getAggregations().get("count") != null ?
+                ((org.elasticsearch.search.aggregations.metrics.ValueCount) searchResponse.getAggregations().get("count")).getValue() : 0;
+
+        double total = searchResponse.getAggregations().get("total") != null ?
+                ((Sum) searchResponse.getAggregations().get("total")).getValue() : 0;
+
+
+        getDataResponse response = new getDataResponse();
+        response.setData(extractSearchResults(searchResponse));
+        response.setSum(total);
+        response.setCount(count);
+        return response;
+    }
+
+    private String formatDate(String date) {
+        // You may need to adjust the date format based on your Elasticsearch date mapping
+        LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
+        return localDate.format(DateTimeFormatter.ISO_DATE);
     }
 
     private List<Map<String, Object>> extractSearchResults(SearchResponse searchResponse) {

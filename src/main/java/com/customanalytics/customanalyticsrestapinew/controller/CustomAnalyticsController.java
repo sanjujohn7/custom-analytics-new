@@ -1,5 +1,6 @@
 package com.customanalytics.customanalyticsrestapinew.controller;
 
+import com.customanalytics.customanalyticsrestapinew.contract.getDataResponse;
 import com.customanalytics.customanalyticsrestapinew.service.CustomAnalyticsService;
 import java.io.IOException;
 import java.util.Collections;
@@ -54,6 +55,23 @@ public class CustomAnalyticsController {
             return ResponseEntity.ok(searchResults);
         } catch (IOException e) {
             return ResponseEntity.status(500).body(Collections.singletonList("Error while filtering data " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/data")
+    public ResponseEntity<getDataResponse> getDataBetweenDatesAndCategory(
+            @RequestParam String indexName,
+            @RequestParam String fromDate,
+            @RequestParam String toDate,
+            @RequestParam String productCategory
+    ) {
+        {
+            try {
+                getDataResponse searchResults = (getDataResponse) customAnalyticsService.getDataBetweenDatesAndCategory(indexName, fromDate, toDate, productCategory);
+                return ResponseEntity.ok(searchResults);
+            } catch (IOException e) {
+                return ResponseEntity.status(500).body((getDataResponse) Collections.singletonList("Error while fetching data " + e.getMessage()));
+            }
         }
     }
 }
