@@ -102,7 +102,6 @@ public class CustomAnalyticsService {
             throw new IndexNotFoundException("Index not found");
         }
     }
-
     private List<Map<String, Object>> extractDocuments(SearchResponse searchResponse) {
         List<Map<String, Object>> documents = new ArrayList<>();
 
@@ -117,12 +116,10 @@ public class CustomAnalyticsService {
         SearchRequest searchRequest = new SearchRequest(indexName);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
-        // Add filter
         if (filterField != null && filterValue != null) {
             searchSourceBuilder.query(QueryBuilders.matchQuery(filterField, filterValue));
         }
 
-        // Add sorting
         if (sortField != null) {
             searchSourceBuilder.sort(sortField, SortOrder.fromString(sortOrder));
         }

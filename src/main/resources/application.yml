@@ -7,9 +7,17 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/CustomAnalytics
     username: postgres
-    password: password
+    password: Aish@123
+    driver-class-name: org.postgresql.Driver
 
   jpa:
+    show-sql: true
     hibernate:
       ddl-auto: update
-    show-sql: true
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+server :
+  port : 8081

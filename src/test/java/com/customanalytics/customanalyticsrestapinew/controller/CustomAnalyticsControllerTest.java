@@ -1,21 +1,32 @@
 package com.customanalytics.customanalyticsrestapinew.controller;
 
+
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+
+import com.customanalytics.customanalyticsrestapinew.contract.UserRequest;
+import com.customanalytics.customanalyticsrestapinew.contract.UserResponse;
 import com.customanalytics.customanalyticsrestapinew.service.CustomAnalyticsService;
 import java.io.IOException;
+
+import com.customanalytics.customanalyticsrestapinew.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,6 +39,7 @@ public class CustomAnalyticsControllerTest {
     @Autowired private MockMvc mockMvc;
 
     @MockBean private CustomAnalyticsService customAnalyticsService;
+    @MockBean private UserService userService;
 
     @Test
     public void testUploadFile() throws Exception {
@@ -97,5 +109,20 @@ public class CustomAnalyticsControllerTest {
                         content()
                                 .string("[\"Error while filtering data Error filtering data\"]"));
     }
+    @Test
+    void testAddUser() throws Exception {
+        UserRequest userRequest = new UserRequest("Ananthu", "ananthu@gmail.com","Ananthu@123");
+        UserResponse expectedResponse = new UserResponse(1L,"Ananthu","ananthu@gmail.com","Ananthu@123");
+
+        when(userService.addUser(any(UserRequest.class))).thenReturn(expectedResponse);
+
+        mockMvc.perform(
+                post("/custom-analytics/sign-up")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(userRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(expectedResponse)));
+    }
+
 
 }
