@@ -1,7 +1,7 @@
 package com.customanalytics.customanalyticsrestapinew.service;
 
-import com.customanalytics.customanalyticsrestapinew.contract.UserRequest;
-import com.customanalytics.customanalyticsrestapinew.contract.UserResponse;
+import com.customanalytics.customanalyticsrestapinew.contract.request.UserRequest;
+import com.customanalytics.customanalyticsrestapinew.contract.response.UserResponse;
 import com.customanalytics.customanalyticsrestapinew.model.User;
 import com.customanalytics.customanalyticsrestapinew.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

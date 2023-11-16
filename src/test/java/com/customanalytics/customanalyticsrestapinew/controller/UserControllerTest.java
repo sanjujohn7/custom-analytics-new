@@ -1,7 +1,7 @@
 package com.customanalytics.customanalyticsrestapinew.controller;
 
-import com.customanalytics.customanalyticsrestapinew.contract.UserRequest;
-import com.customanalytics.customanalyticsrestapinew.contract.UserResponse;
+import com.customanalytics.customanalyticsrestapinew.contract.request.UserRequest;
+import com.customanalytics.customanalyticsrestapinew.contract.response.UserResponse;
 import com.customanalytics.customanalyticsrestapinew.service.JwtService;
 import com.customanalytics.customanalyticsrestapinew.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;

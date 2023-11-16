@@ -1,4 +1,4 @@
-package com.customanalytics.customanalyticsrestapinew.contract;
+package com.customanalytics.customanalyticsrestapinew.contract.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
