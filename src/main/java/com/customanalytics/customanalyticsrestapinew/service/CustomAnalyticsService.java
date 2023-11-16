@@ -48,19 +48,17 @@ public class CustomAnalyticsService {
         List<Map<String, String>> records;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
             String[] headers = br.readLine().split(",");
-            records =
-                    br.lines()
-                            .map(s -> s.split(","))
-                            .map(
-                                    t ->
-                                            IntStream.range(0, t.length)
-                                                    .boxed()
-                                                    .collect(toMap(i -> headers[i], i -> t[i])))
-                            .collect(toList());
-            System.out.println(headers);
-            System.out.println(records);
+
+            String[] cleanedHeaders = Arrays.stream(headers)
+                    .map(String::trim)
+                    .map(header -> header.replaceAll("\\s+", ""))
+                    .toArray(String[]::new);
+
+            records = br.lines()
+                    .map(s -> s.split(","))
+                    .map(t -> IntStream.range(0, t.length).boxed().collect(toMap(i -> cleanedHeaders[i], i -> t[i])))
+                    .collect(toList());
         }
-        ;
         if (indexExists(indexName)) {
             throw new IndexAlreadyExistException("Index name already Exist");
         }
@@ -145,41 +143,32 @@ public class CustomAnalyticsService {
                 .collect(Collectors.toList());
     }
 
-    public GetDataResponse getDataBetweenDatesAndCategory(
-            String indexName, String fromDate, String toDate, String productCategory)
-            throws IOException {
+    public GetDataResponse getTotalSalesAndProfit(String indexName, String fromDate, String toDate, String productCategory) throws IOException {
+
         SearchRequest searchRequest = new SearchRequest(indexName);
+
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        RangeQueryBuilder dateRangeQuery =
-                QueryBuilders.rangeQuery("Date").gte(formatDate(fromDate)).lte(formatDate(toDate));
-        TermQueryBuilder categoryQuery =
-                QueryBuilders.termQuery("Product Category.keyword", productCategory);
+        RangeQueryBuilder dateRangeQuery = QueryBuilders.rangeQuery("Date").gte(formatDate(fromDate)).lte(formatDate(toDate));
+        TermQueryBuilder categoryQuery = QueryBuilders.termQuery("ProductCategory.keyword", productCategory);
+
         boolQueryBuilder.must(dateRangeQuery);
         boolQueryBuilder.must(categoryQuery);
         searchSourceBuilder.query(boolQueryBuilder);
 
-        searchSourceBuilder.aggregation(
-                AggregationBuilders.count("count")
-                        .field("Product Category.keyword")); // Replace 'field_name' with your
-        // actual field name
-        searchSourceBuilder.aggregation(
-                AggregationBuilders.sum("total")
-                        .field("Total Sales.numeric")); // Replace 'numeric_field' with your actual
-        // numeric field name
+        searchSourceBuilder.aggregation(AggregationBuilders.count("count").field("ProductCategory.keyword"));
+
+        searchSourceBuilder.aggregation(AggregationBuilders.sum("total").field("TotalSales.numeric"));
+
         searchRequest.source(searchSourceBuilder);
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
-        long count =
-                searchResponse.getAggregations().get("count") != null
-                        ? ((org.elasticsearch.search.aggregations.metrics.ValueCount)
-                                        searchResponse.getAggregations().get("count"))
-                                .getValue()
-                        : 0;
-        double total =
-                searchResponse.getAggregations().get("total") != null
-                        ? ((Sum) searchResponse.getAggregations().get("total")).getValue()
-                        : 0;
+        long count = searchResponse.getAggregations().get("count") != null ? ((org.elasticsearch.search.aggregations.metrics.ValueCount)
+                                        searchResponse.getAggregations().get("count")).getValue() : 0;
+
+        double total = searchResponse.getAggregations().get("total") != null ?
+                ((Sum) searchResponse.getAggregations().get("total")).getValue() : 0;
 
         GetDataResponse response = new GetDataResponse();
         response.setData(extractSearchResults(searchResponse));
@@ -189,7 +178,6 @@ public class CustomAnalyticsService {
     }
 
     private String formatDate(String date) {
-        // You may need to adjust the date format based on your Elasticsearch date mapping
         LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
         return localDate.format(DateTimeFormatter.ISO_DATE);
     }
