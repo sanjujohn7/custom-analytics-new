@@ -1,6 +1,6 @@
 package com.customanalytics.customanalyticsrestapinew.service;
 
-import com.customanalytics.customanalyticsrestapinew.contract.AuthResponse;
+import com.customanalytics.customanalyticsrestapinew.contract.response.AuthResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

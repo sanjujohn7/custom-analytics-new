@@ -1,9 +1,9 @@
 package com.customanalytics.customanalyticsrestapinew.controller;
 
-import com.customanalytics.customanalyticsrestapinew.contract.AuthRequest;
-import com.customanalytics.customanalyticsrestapinew.contract.AuthResponse;
-import com.customanalytics.customanalyticsrestapinew.contract.UserRequest;
-import com.customanalytics.customanalyticsrestapinew.contract.UserResponse;
+import com.customanalytics.customanalyticsrestapinew.contract.request.AuthRequest;
+import com.customanalytics.customanalyticsrestapinew.contract.response.AuthResponse;
+import com.customanalytics.customanalyticsrestapinew.contract.request.UserRequest;
+import com.customanalytics.customanalyticsrestapinew.contract.response.UserResponse;
 import com.customanalytics.customanalyticsrestapinew.exception.UserNotFoundException;
 import com.customanalytics.customanalyticsrestapinew.service.JwtService;
 import com.customanalytics.customanalyticsrestapinew.service.UserService;

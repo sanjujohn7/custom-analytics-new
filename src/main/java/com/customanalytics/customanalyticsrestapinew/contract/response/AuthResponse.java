@@ -1,4 +1,4 @@
-package com.customanalytics.customanalyticsrestapinew.contract;
+package com.customanalytics.customanalyticsrestapinew.contract.response;
 
 import lombok.*;
 
