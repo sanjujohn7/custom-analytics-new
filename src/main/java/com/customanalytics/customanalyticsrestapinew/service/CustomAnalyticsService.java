@@ -11,15 +11,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvException;
+import com.opencsv.exceptions.CsvValidationException;
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -44,40 +46,70 @@ public class CustomAnalyticsService {
 
     private final RestHighLevelClient client;
 
-    public void uploadFile(String indexName, MultipartFile file) throws IOException {
-        List<Map<String, String>> records;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            String[] headers = br.readLine().split(",");
-
-            String[] cleanedHeaders = Arrays.stream(headers)
-                    .map(String::trim)
-                    .map(header -> header.replaceAll("\\s+", ""))
-                    .toArray(String[]::new);
-
-            records = br.lines()
-                    .map(s -> s.split(","))
-                    .map(t -> IntStream.range(0, t.length).boxed().collect(toMap(i -> cleanedHeaders[i], i -> t[i])))
-                    .collect(toList());
-        }
+    public void uploadFile(String indexName, MultipartFile file) throws IOException, CsvException {
+        Map<String, Object> resultMap = new HashMap<>();
         if (indexExists(indexName)) {
             throw new IndexAlreadyExistException("Index name already Exist");
         }
-        createIndex(indexName);
-        BulkRequest bulkRequest = new BulkRequest();
-        for (Map<String, String> record : records) {
-            bulkRequest.add(new IndexRequest(indexName).source(record));
+        CSVReader csvReader = new CSVReader(new BufferedReader(new InputStreamReader(file.getInputStream()))) ;
+            String[] headers = csvReader.readNext();
+            if (headers != null) {
+                List<String[]> rows = csvReader.readAll();
+                List<Class<?>> columnDataTypes = inferColumnDataTypes(headers, rows);
+                for (String[] data : rows) {
+                    Map<String, Object> dataMap = createDataMap(headers, data, columnDataTypes);
+                    IndexRequest indexRequest = new IndexRequest(indexName).source(dataMap);
+                    client.index(indexRequest, RequestOptions.DEFAULT);
+                }
+            }
         }
-        client.bulk(bulkRequest, RequestOptions.DEFAULT);
+
+    private List<Class<?>> inferColumnDataTypes(String[] headers, List<String[]> rows) {
+        List<Class<?>> columnDataTypes = new ArrayList<>();
+        for (int i = 0; i < headers.length; i++) {
+            Class<?> dataType = inferDataType(headers[i], getColumnData(i, rows));
+            columnDataTypes.add(dataType);
+        }
+        return columnDataTypes;
+    }
+    private List<String> getColumnData(int columnIndex, List<String[]> rows) {
+        return rows.stream().map(row -> row[columnIndex]).collect(Collectors.toList());
+    }
+    private Class<?> inferDataType(String header, List<String> columnData) {
+        boolean isNumeric = columnData.stream().allMatch(this::isNumeric);
+        return isNumeric ? Double.class : String.class;
+    }
+    private boolean isNumeric(String value) {
+        try {
+            Double.parseDouble(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+    private Map<String, Object> createDataMap(String[] headers, String[] data, List<Class<?>> columnDataTypes) {
+        Map<String, Object> dataMap = new HashMap<>();
+        for (int i = 0; i < headers.length; i++) {
+            String formattedKey = headers[i].replaceAll("\\s+", "");
+            String value = data[i];
+            Class<?> dataType = columnDataTypes.get(i);
+            if (dataType.equals(Double.class)) {
+                try {
+                    double numericValue = Double.parseDouble(value);
+                    dataMap.put(formattedKey, numericValue);
+                } catch (NumberFormatException e) {
+                    dataMap.put(formattedKey, value);
+                }
+            } else {
+                dataMap.put(formattedKey, value);
+            }
+        }
+        return dataMap;
     }
 
     private boolean indexExists(String indexName) throws IOException {
         GetIndexRequest request = new GetIndexRequest(indexName);
         return client.indices().exists(request, RequestOptions.DEFAULT);
-    }
-
-    private void createIndex(String indexName) throws IOException {
-        CreateIndexRequest request = new CreateIndexRequest(indexName);
-        client.indices().create(request, RequestOptions.DEFAULT);
     }
 
     public List<Map<String, Object>> getDataByIndexName(String indexName) throws IOException {
@@ -159,7 +191,7 @@ public class CustomAnalyticsService {
 
         searchSourceBuilder.aggregation(AggregationBuilders.count("count").field("ProductCategory.keyword"));
 
-        searchSourceBuilder.aggregation(AggregationBuilders.sum("total").field("TotalSales.numeric"));
+        searchSourceBuilder.aggregation(AggregationBuilders.sum("total").field("TotalProfit"));
 
         searchRequest.source(searchSourceBuilder);
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);

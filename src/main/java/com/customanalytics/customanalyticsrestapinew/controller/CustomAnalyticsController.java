@@ -5,6 +5,8 @@ import com.customanalytics.customanalyticsrestapinew.service.CustomAnalyticsServ
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+
+import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +24,7 @@ public class CustomAnalyticsController {
         try {
             customAnalyticsService.uploadFile(indexName, file);
             return ResponseEntity.ok("File uploaded successfully");
-        } catch (IOException e) {
+        } catch (IOException | CsvException e) {
             return ResponseEntity.status(500).body("Error uploading file: " + e.getMessage());
         }
     }
