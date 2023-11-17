@@ -6,10 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.io.InputStream;
+import java.util.*;
 
 import com.opencsv.exceptions.CsvException;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
@@ -24,15 +22,20 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.elasticsearch.action.index.IndexRequest;
 
 public class CustomAnalyticsServiceTest {
     private RestHighLevelClient mockClient;
-
     private CustomAnalyticsService customAnalyticsService;
 
+    @Captor
+    private ArgumentCaptor<IndexRequest> indexRequestCaptor;
     @BeforeEach
     void init() {
         MockitoAnnotations.openMocks(this);
@@ -43,24 +46,33 @@ public class CustomAnalyticsServiceTest {
     }
 
     @Test
-    void testUploadFile() throws IOException, CsvException {
+    public void testUploadFile() throws Exception {
+
         String indexName = "test1";
-        MockMultipartFile file =
-                new MockMultipartFile(
-                        "file", "test.csv", "text/plain", "name,age\nJohn,30\nJane,25".getBytes());
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("test.csv");
+        MockMultipartFile file = new MockMultipartFile("file", "test.csv", "text/csv", inputStream);
 
         when(mockClient.indices().exists(any(GetIndexRequest.class), any())).thenReturn(false);
-        when(mockClient.indices().create(any(CreateIndexRequest.class), any())).thenReturn(null);
-        when(mockClient.bulk(any(BulkRequest.class), any())).thenReturn(null);
+
+        List<String[]> rows = List.of(
+                new String[]{"Header1", "Header2"},
+                new String[]{"123", "test"}
+        );
 
         customAnalyticsService.uploadFile(indexName, file);
 
         verify(mockClient.indices(), times(1)).exists(any(GetIndexRequest.class), any());
 
-        verify(mockClient, times(1)).bulk(any(), any());
-        assertTrue(true);
-    }
+        List<IndexRequest> capturedIndexRequests = indexRequestCaptor.getAllValues();
+        for (IndexRequest capturedRequest : capturedIndexRequests) {
+            Map<String, Object> actualSource = capturedRequest.sourceAsMap();
+            Map<String, Object> expectedDataMap = new HashMap<>();
+            expectedDataMap.put("Header1", "123");
+            expectedDataMap.put("Header2", "test");
+            assertEquals(expectedDataMap, actualSource);
 
+        }
+    }
     @Test
     public void testGetDataByIndexName() throws IOException {
         String indexName = "testIndex";
