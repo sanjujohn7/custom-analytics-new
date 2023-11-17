@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvException;
+import com.opencsv.exceptions.CsvValidationException;
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
@@ -44,33 +46,24 @@ public class CustomAnalyticsService {
 
     private final RestHighLevelClient client;
 
-    public void uploadFile(String indexName, MultipartFile file) throws IOException{
+    public void uploadFile(String indexName, MultipartFile file) throws IOException, CsvException {
         Map<String, Object> resultMap = new HashMap<>();
         if (indexExists(indexName)) {
             throw new IndexAlreadyExistException("Index name already Exist");
         }
-        try (CSVReader csvReader = new CSVReader(new BufferedReader(new InputStreamReader(file.getInputStream())))) {
-            String[] headers = csvReader.readNext(); // Assuming CSV uses comma as delimiter for columns
+        CSVReader csvReader = new CSVReader(new BufferedReader(new InputStreamReader(file.getInputStream()))) ;
+            String[] headers = csvReader.readNext();
             if (headers != null) {
                 List<String[]> rows = csvReader.readAll();
                 List<Class<?>> columnDataTypes = inferColumnDataTypes(headers, rows);
                 for (String[] data : rows) {
                     Map<String, Object> dataMap = createDataMap(headers, data, columnDataTypes);
                     IndexRequest indexRequest = new IndexRequest(indexName).source(dataMap);
-                    IndexResponse response = client.index(indexRequest, RequestOptions.DEFAULT);
-
-                    if (response.getResult() != null) {
-                        resultMap.put("success", "Data indexed successfully");
-                    } else {
-                        resultMap.put("error", "Failed to index data into Elasticsearch");
-                    }
+                    client.index(indexRequest, RequestOptions.DEFAULT);
                 }
             }
-        } catch (Exception e) {
-            resultMap.put("error", "Error processing the file or indexing data: " + e.getMessage());
-            e.printStackTrace();
         }
-    }
+
     private List<Class<?>> inferColumnDataTypes(String[] headers, List<String[]> rows) {
         List<Class<?>> columnDataTypes = new ArrayList<>();
         for (int i = 0; i < headers.length; i++) {

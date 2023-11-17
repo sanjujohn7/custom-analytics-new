@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import com.opencsv.exceptions.CsvException;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -41,7 +43,7 @@ public class CustomAnalyticsServiceTest {
     }
 
     @Test
-    void testUploadFile() throws IOException {
+    void testUploadFile() throws IOException, CsvException {
         String indexName = "test1";
         MockMultipartFile file =
                 new MockMultipartFile(
