@@ -19,7 +19,7 @@ public class UserService {
 
     public UserResponse addUser(UserRequest userRequest) {
     Optional<User> userOptional = userRepository.findByName(userRequest.getName().trim());
-    if (userOptional.isPresent()){
+    if (userOptional != null && userOptional.isPresent()){
     throw new UserNotFoundException("User name already exists !");
     }
         User user =

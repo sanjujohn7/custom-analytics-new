@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
+import com.customanalytics.customanalyticsrestapinew.contract.response.GetDataResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.IndicesClient;
@@ -16,6 +17,9 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.metrics.Sum;
+import org.elasticsearch.search.aggregations.metrics.ValueCount;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -116,5 +120,40 @@ public class CustomAnalyticsServiceTest {
                         indexName, filterField, filterValue, sortField, sortOrder, from, size);
         assertEquals(1, result.size());
         assertEquals("NewYork", result.get(0).get("GeographicLocation"));
+    }
+
+    @Test
+    public void testGetTotalSalesAndProfit() throws IOException {
+
+        SearchResponse searchResponse = mock(SearchResponse.class);
+        Aggregations aggregations = mock(Aggregations.class);
+        when(searchResponse.getAggregations()).thenReturn(aggregations);
+
+        ValueCount countAggregation = mock(ValueCount.class);
+        when(countAggregation.getValue()).thenReturn(10L);
+        when(aggregations.get("count")).thenReturn(countAggregation);
+
+        Sum totalAggregation = mock(Sum.class);
+        when(totalAggregation.getValue()).thenReturn(500.0);
+        when(aggregations.get("total")).thenReturn(totalAggregation);
+
+        SearchHit hit1 = mock(SearchHit.class);
+        when(hit1.getId()).thenReturn("1");
+        when(hit1.getSourceAsString()).thenReturn("{\"ProductCategory\": \"count\"}");
+        SearchHit hit2 = mock(SearchHit.class);
+        when(hit2.getId()).thenReturn("2");
+        when(hit2.getSourceAsString()).thenReturn("{\"TotalProfit\": \"total\"}");
+
+        SearchHits hits = mock(SearchHits.class);
+        when(hits.getHits()).thenReturn(new SearchHit[]{hit1, hit2});
+        when(searchResponse.getHits()).thenReturn(hits);
+
+        when(mockClient.search(any(SearchRequest.class), any(RequestOptions.class))).thenReturn(searchResponse);
+
+        GetDataResponse response = customAnalyticsService.getTotalSalesAndProfit("yourIndex", "2023-01-01", "2023-12-31", "yourCategory");
+
+        assertEquals(10L, response.getCount());
+        assertEquals(500L, response.getSum());
+        assertEquals(2, response.getData().size());
     }
 }
