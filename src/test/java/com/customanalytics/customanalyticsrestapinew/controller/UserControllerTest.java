@@ -1,9 +1,9 @@
 package com.customanalytics.customanalyticsrestapinew.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,7 +15,6 @@ import com.customanalytics.customanalyticsrestapinew.service.JwtService;
 import com.customanalytics.customanalyticsrestapinew.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,23 +59,36 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testAuthenticateAndGetToken() throws Exception {
-        AuthRequest authRequest = AuthRequest.builder().name("test").password("pass").build();
-        AuthResponse expectedResponse = AuthResponse.builder().token("token").build();
+    void authenticateAndGetToken_ValidAuthentication_ReturnsToken() throws Exception {
 
-        Authentication authentication = Mockito.mock(Authentication.class);
-        when(authentication.isAuthenticated()).thenReturn(true);
+        AuthRequest authRequest = new AuthRequest("username", "password");
+        Authentication authenticated = mock(Authentication.class);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-        when(jwtService.generateToken(authRequest.getName())).thenReturn(expectedResponse);
+                .thenReturn(authenticated);
+        when(authenticated.isAuthenticated()).thenReturn(true);
+        when(jwtService.generateToken("username")).thenReturn(new AuthResponse());
 
-        String path = "/login";
-        mockMvc.perform(
-                        post(path)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(new ObjectMapper().writeValueAsString(authRequest)))
-                .andExpect(status().isForbidden())
-                .andDo(print())
-                .andExpect(content().string(""));
+        mockMvc.perform(post("/custom-analytics/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(authRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+    }
+
+    @Test
+    void authenticateAndGetToken_InvalidAuthentication_ThrowsException() throws Exception {
+
+        AuthRequest authRequest = new AuthRequest("username", "password");
+        Authentication authenticated = mock(Authentication.class);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authenticated);
+        when(authenticated.isAuthenticated()).thenReturn(false);
+
+        mockMvc.perform(post("/custom-analytics/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(authRequest)))
+                .andExpect(status().isBadRequest());
     }
 }
