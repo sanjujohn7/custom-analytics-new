@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "431e0847-5bc3-4b52-bdfe-f2b49952d3ce",
+		"_postman_id": "7195bb65-2ed7-49bc-bf4c-3a143e1daf2f",
 		"name": "CustomAnalytics",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30806363"
 	},
 	"item": [
 		{
@@ -210,6 +211,53 @@
 					"path": [
 						"custom-analytics",
 						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAggregation",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc3dhdGh5MiIsImlhdCI6MTcwMDgwNDA3MywiZXhwIjoxNzAwODA1ODczfQ._R-pmCljzKYleDCGzYwuDj4fbPAxg9BIXKMvydsC3X4",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/custom-analytics/data?indexName=data6&fromDate=2023-01-01&toDate=2023-01-27&productCategory=Electronics",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"custom-analytics",
+						"data"
+					],
+					"query": [
+						{
+							"key": "indexName",
+							"value": "data6"
+						},
+						{
+							"key": "fromDate",
+							"value": "2023-01-01"
+						},
+						{
+							"key": "toDate",
+							"value": "2023-01-27"
+						},
+						{
+							"key": "productCategory",
+							"value": "Electronics"
+						}
 					]
 				}
 			},
